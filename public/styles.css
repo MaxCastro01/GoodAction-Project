@@ -1,0 +1,32 @@
+:root{
+  --teal:#12433d;
+  --paper:#f6f4ef;
+  --line:#d8d4c6;
+  --ink:#1a1a17;
+}
+*{box-sizing:border-box;}
+body{
+  font-family: system-ui, sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  margin:0;
+  padding:0 20px 60px;
+}
+header{
+  max-width:640px;margin:0 auto;padding:32px 0 20px;border-bottom:1px solid var(--line);
+}
+header h1{margin:0 0 6px;color:var(--teal);}
+header p{margin:0 0 10px;color:#555;font-size:14px;}
+#sesion-info{font-size:13px;font-weight:600;color:var(--teal);}
+main{max-width:640px;margin:24px auto;display:flex;flex-direction:column;gap:20px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:6px;padding:20px;}
+form{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+input, select, button{
+  padding:10px;border:1px solid var(--line);border-radius:4px;font-size:14px;
+}
+button{
+  background:var(--teal);color:#fff;border:none;cursor:pointer;font-weight:600;
+}
+button:hover{opacity:.9;}
+ul{padding-left:18px;}
+pre{background:#f0efe9;padding:10px;border-radius:4px;font-size:13px;overflow-x:auto;}

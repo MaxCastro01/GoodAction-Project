@@ -1,0 +1,37 @@
+{
+  "name": "good-action-api",
+  "version": "1.0.0",
+  "description": "Good Action - Sistema de Gestion de Donaciones y Comprobantes (backend simplificado)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "jest --coverage"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/modules/auth/**/*.js",
+      "src/modules/donaciones/**/*.js",
+      "src/modules/comprobantes/**/*.js",
+      "src/middleware/**/*.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    }
+  }
+}
