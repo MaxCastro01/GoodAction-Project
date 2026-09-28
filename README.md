@@ -61,34 +61,23 @@ con un umbral de 80% en statements, funciones, lineas y branches.
    - Pendiente de redactar una vez ejecutados los pasos 1 y 2 (comparar
      planificado vs. ejecutado, lecciones aprendidas, plan de mejora continua).
 
-## Como ejecutar el analisis de SonarQube / SonarCloud
+## Como ejecutar el analisis de SonarQube Cloud
 
-El archivo `sonar-project.properties` ya esta configurado para leer el reporte
-de cobertura que genera Jest (`coverage/lcov.info`).
+1. Crea cuenta en https://sonarcloud.io con tu usuario de GitHub e importa el repo.
+2. Copia el `organization` y el `project key` que te muestra y pegalos en `sonar-project.properties`.
+3. En SonarQube Cloud: Administration > Analysis Method > desactiva "Automatic Analysis"
+   (si no, choca con el analisis del pipeline y no importa la cobertura).
+4. Genera un token (My Account > Security) y guardalo en GitHub:
+   Settings > Secrets and variables > Actions > New repository secret, nombre `SONAR_TOKEN`.
+5. Haz push: el job `analisis-sonar` de `.github/workflows/ci.yml` corre las pruebas y sube el analisis.
+   (Sin el secreto `SONAR_TOKEN` el job se omite y no rompe el pipeline.)
 
-**Opcion A — SonarCloud (recomendada si el repo ya esta en GitHub):**
-1. Entra a https://sonarcloud.io y da de alta el repositorio con tu cuenta de GitHub.
-2. Genera un token en SonarCloud (My Account > Security).
-3. Corre localmente:
-   ```bash
-   npm test                # genera coverage/lcov.info
-   npx sonar-scanner \
-     -Dsonar.host.url=https://sonarcloud.io \
-     -Dsonar.organization=<tu-organizacion> \
-     -Dsonar.login=<tu-token>
-   ```
-4. Los resultados (deuda tecnica, code smells, duplicacion) apareceran en el
-   dashboard de SonarCloud del proyecto.
-
-**Opcion B — SonarQube local (con Docker):**
+Alternativa local, sin pipeline:
 ```bash
-docker run -d --name sonarqube -p 9000:9000 sonarqube:lts-community
-# espera unos segundos a que levante, luego entra a http://localhost:9000
-# usuario/clave por defecto: admin / admin (te pedira cambiarla)
+npm install -D @sonar/scan
 npm test
-npx sonar-scanner \
-  -Dsonar.host.url=http://localhost:9000 \
-  -Dsonar.login=<token-generado-en-sonarqube>
+set SONAR_TOKEN=<tu-token>            # en cmd de Windows
+npx sonar-scanner-npm
 ```
 
 ## Nota sobre la base de datos
