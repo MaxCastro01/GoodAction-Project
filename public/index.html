@@ -3,62 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Good Action: sistema de gestion de donaciones y comprobantes">
 <title>Good Action — Gestion de Donaciones</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header>
     <h1>Good Action</h1>
-    <p>Sistema de gestion de donaciones y comprobantes — demo minima</p>
-    <span id="sesion-info">No has iniciado sesion</span>
+    <p>Sistema de gestion de donaciones y comprobantes</p>
+    <p id="sesion-info" role="status">No has iniciado sesion</p>
   </header>
 
   <main>
-    <section class="card" id="seccion-auth">
-      <h2>Registro / Login</h2>
+    <section class="card" id="seccion-auth" aria-labelledby="titulo-auth">
+      <h2 id="titulo-auth">Registro e inicio de sesion</h2>
+
       <form id="form-registro">
         <h3>Crear cuenta</h3>
-        <input type="text" id="reg-nombre" placeholder="Nombre" required>
-        <input type="email" id="reg-email" placeholder="Correo" required>
-        <input type="password" id="reg-password" placeholder="Contrasena" required>
-        <select id="reg-rol">
-          <option value="usuario">Usuario (donante)</option>
-          <option value="administrador">Administrador</option>
-        </select>
+        <label for="reg-nombre">Nombre</label>
+        <input type="text" id="reg-nombre" name="nombre" autocomplete="name" maxlength="100" required>
+        <label for="reg-email">Correo</label>
+        <input type="email" id="reg-email" name="email" autocomplete="email" required>
+        <label for="reg-password">Contrasena (minimo 8 caracteres)</label>
+        <input type="password" id="reg-password" name="password" autocomplete="new-password" minlength="8" maxlength="72" required>
         <button type="submit">Registrarme</button>
       </form>
 
       <form id="form-login">
         <h3>Iniciar sesion</h3>
-        <input type="email" id="login-email" placeholder="Correo" required>
-        <input type="password" id="login-password" placeholder="Contrasena" required>
+        <label for="login-email">Correo</label>
+        <input type="email" id="login-email" name="email" autocomplete="email" required>
+        <label for="login-password">Contrasena</label>
+        <input type="password" id="login-password" name="password" autocomplete="current-password" required>
         <button type="submit">Entrar</button>
       </form>
-      <p id="auth-mensaje"></p>
+      <p id="auth-mensaje" role="alert"></p>
     </section>
 
-    <section class="card" id="seccion-donacion" hidden>
-      <h2>Registrar un donativo</h2>
+    <section class="card" id="seccion-donacion" aria-labelledby="titulo-donacion" hidden>
+      <h2 id="titulo-donacion">Registrar un donativo</h2>
       <form id="form-donacion">
-        <select id="don-tipo">
+        <label for="don-tipo">Tipo de donativo</label>
+        <select id="don-tipo" name="tipo">
           <option value="dinero">Dinero</option>
           <option value="alimento">Alimento</option>
           <option value="insumo">Insumo</option>
         </select>
-        <input type="number" id="don-cantidad" placeholder="Cantidad" required min="1">
-        <input type="text" id="don-descripcion" placeholder="Descripcion (opcional)">
+        <label for="don-cantidad">Cantidad</label>
+        <input type="number" id="don-cantidad" name="cantidad" min="1" required>
+        <label for="don-valor">Valor estimado (opcional)</label>
+        <input type="number" id="don-valor" name="valorEstimado" min="0">
+        <label for="don-descripcion">Descripcion (opcional)</label>
+        <input type="text" id="don-descripcion" name="descripcion" maxlength="500">
         <button type="submit">Registrar donativo</button>
       </form>
-      <p id="don-mensaje"></p>
+      <p id="don-mensaje" role="status"></p>
 
       <h3>Mis donativos</h3>
       <ul id="lista-donaciones"></ul>
 
       <div id="panel-admin" hidden>
         <h3>Panel de administracion</h3>
-        <button id="btn-impacto">Ver reporte de impacto</button>
+        <button type="button" id="btn-impacto">Ver reporte de impacto</button>
         <pre id="reporte-impacto"></pre>
       </div>
+
+      <button type="button" id="btn-salir" class="secundario">Cerrar sesion</button>
     </section>
   </main>
 

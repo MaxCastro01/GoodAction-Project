@@ -9,6 +9,9 @@ const post = (path, body, token) =>
     body: JSON.stringify(body),
   });
 
+// 401 (credenciales invalidas) o 429 (limite de intentos) significan que no se inicio sesion.
+const rechazado = (status) => status === 401 || status === 429;
+
 const resultados = [];
 const anotar = (id, prueba, esperado, obtenido, ok) =>
   resultados.push({ id, prueba, esperado, obtenido, resultado: ok ? 'OK' : 'HALLAZGO' });
@@ -22,17 +25,17 @@ const anotar = (id, prueba, esperado, obtenido, ok) =>
   const sqli = ["' OR '1'='1", "admin'--", "' OR 1=1 --", "'; DROP TABLE users; --", '" OR ""="'];
   for (const [i, payload] of sqli.entries()) {
     const r = await post('/api/auth/login', { email: payload, password: payload });
-    anotar(`SQLI-${i + 1}`, `Login con payload SQLi: ${payload}`, '401 (sin sesion)', String(r.status), r.status === 401);
+    anotar(`SQLI-${i + 1}`, `Login con payload SQLi: ${payload}`, '401 o 429 (sin sesion)', String(r.status), rechazado(r.status));
   }
   // SQLi via email valido + password inyectado
   const r1 = await post('/api/auth/login', { email: `v${sfx}@test.com`, password: "' OR '1'='1" });
-  anotar('SQLI-6', 'Email valido + password con SQLi', '401', String(r1.status), r1.status === 401);
+  anotar('SQLI-6', 'Email valido + password con SQLi', '401 o 429', String(r1.status), rechazado(r1.status));
 
   // Operadores tipo NoSQL / tipos inesperados
   const r2 = await post('/api/auth/login', { email: { $ne: null }, password: { $ne: null } });
-  anotar('INJ-1', 'Login con objetos {"$ne":null}', '401 (sin sesion, sin 500)', String(r2.status), r2.status === 401);
+  anotar('INJ-1', 'Login con objetos {"$ne":null}', '401 o 429 (sin 500)', String(r2.status), rechazado(r2.status));
   const r3 = await post('/api/auth/login', { email: `v${sfx}@test.com`, password: { $ne: null } });
-  anotar('INJ-2', 'Email valido + password como objeto', '401 (sin 500)', String(r3.status), r3.status === 401);
+  anotar('INJ-2', 'Email valido + password como objeto', '401 o 429 (sin 500)', String(r3.status), rechazado(r3.status));
 
   // XSS almacenado
   const xss = '<script>alert(1)</script>';

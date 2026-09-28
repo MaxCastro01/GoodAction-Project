@@ -30,3 +30,7 @@ button{
 button:hover{opacity:.9;}
 ul{padding-left:18px;}
 pre{background:#f0efe9;padding:10px;border-radius:4px;font-size:13px;overflow-x:auto;}
+
+label{font-size:13px;font-weight:600;color:var(--teal);}
+button.secundario{background:#fff;color:var(--teal);border:1px solid var(--line);margin-top:12px;}
+h2,h3{margin:0 0 10px;}

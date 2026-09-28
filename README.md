@@ -1,89 +1,89 @@
 # Good Action — Sistema de Gestion de Donaciones y Comprobantes
 
-Version simplificada del proyecto (avance previo) enfocada en cumplir la actividad de
-Implementacion y seguridad + Pruebas y calidad. Backend real en Node.js/Express con
-JWT y roles; frontend en HTML/JS puro (sin React) solo para probar el flujo.
+Backend en Node.js/Express con autenticacion JWT y roles, registro de donativos con folio
+unico, pruebas unitarias (Jest + Supertest), pipeline CI/CD (GitHub Actions) y analisis de
+seguridad y calidad (OWASP ZAP y SonarQube Cloud). Frontend en HTML/CSS/JS sin frameworks.
 
-## Estructura (fiel a la arquitectura del avance, sin microservicios)
+## Estructura
 
 ```
 src/
-  app.js                 -> arma la app de Express y monta las rutas
-  server.js              -> levanta el servidor
-  db.js                  -> almacenamiento simple en archivo JSON (sustituye a PostgreSQL para esta demo)
-  middleware/auth.js      -> valida JWT y roles (administrador/usuario)
+  app.js                  -> Express: helmet, limite de intentos, rutas, manejo de errores
+  server.js               -> arranque (carga .env, exige JWT_SECRET, crea el administrador inicial)
+  db.js                   -> almacenamiento en archivo JSON (sustituye a PostgreSQL en esta version)
+  middleware/
+    auth.js               -> valida JWT y roles (usuario / administrador)
+    rateLimit.js          -> limite de peticiones por IP
   modules/
-    auth/                -> registro, login, emision de JWT
-    donaciones/          -> registro y listado de donativos (modulo "basico" pedido por la actividad)
-    comprobantes/        -> generador de folio unico
-    instituciones/       -> alta y listado simple de instituciones
-    notificaciones/      -> stub que simula el envio de notificaciones
-tests/                   -> pruebas Jest + Supertest (auth y donaciones)
-public/                  -> frontend minimo en HTML/CSS/JS vanilla
-.github/workflows/ci.yml -> pipeline CI/CD (pruebas + arranque en entorno de prueba)
+    auth/                 -> registro publico (siempre rol "usuario"), login, administrador inicial
+    donaciones/           -> registro y consulta de donativos, reporte de impacto (solo admin)
+    comprobantes/         -> folio unico
+    instituciones/        -> alta (admin) y listado
+    notificaciones/       -> simulacion (consola)
+tests/                    -> pruebas Jest (auth, donaciones, seguridad)
+security/pruebas-manuales.js -> pruebas manuales de SQLi, XSS, control de acceso, fuerza bruta y cabeceras
+public/                   -> frontend
+.github/workflows/ci.yml  -> pipeline: pruebas, despliegue de prueba y analisis Sonar
+sonar-project.properties  -> configuracion de SonarQube Cloud
 ```
 
 ## Como correrlo
 
 ```bash
 npm install
-cp .env.example .env     # ajustar JWT_SECRET si quieres
-npm start                # sirve la API y el frontend en http://localhost:3000
+cp .env.example .env      # en Windows (cmd): copy .env.example .env
+# edita .env: JWT_SECRET (obligatoria), ADMIN_EMAIL y ADMIN_PASSWORD
+npm start                 # http://localhost:3000
 ```
 
-## Como correr las pruebas (con cobertura)
+- `JWT_SECRET` es obligatoria: sin ella el servidor no arranca.
+- El registro publico solo crea cuentas con rol `usuario`. El administrador se crea al arrancar
+  con `ADMIN_EMAIL` y `ADMIN_PASSWORD` (si no existe).
+
+## Pruebas
 
 ```bash
-npm test
+npm test                  # Jest con cobertura (umbral 80 %)
+node security/pruebas-manuales.js   # con el servidor corriendo (npm start)
 ```
 
-La configuracion de Jest en `package.json` mide cobertura solo sobre el modulo
-basico pedido por la actividad (auth + donaciones + comprobantes + middleware),
-con un umbral de 80% en statements, funciones, lineas y branches.
+Nota: el login limita a 10 intentos por IP cada 15 minutos (`LOGIN_RATE_LIMIT_MAX`). Si repites
+las pruebas manuales dentro de esa ventana veras respuestas 429; reinicia el servidor o espera.
 
-## Mapeo con las instrucciones de la actividad
+## Correcciones de seguridad aplicadas
 
-1. **Implementacion y seguridad**
-   - Modulo basico = registro/login de donantes (`modules/auth`) + registro de
-     donativos (`modules/donaciones`).
-   - JWT + roles: `middleware/auth.js` (`requireAuth`, `requireRole`).
-   - Pruebas unitarias Jest con cobertura >= 80%: `tests/auth.test.js`,
-     `tests/donaciones.test.js`.
-   - CI/CD con GitHub Actions: `.github/workflows/ci.yml` corre `npm test` y
-     luego levanta el servidor para simular el despliegue a un entorno de prueba.
-2. **Pruebas y calidad**
-   - OWASP ZAP: se apunta al servidor local (`npm start`) contra los endpoints
-     `/api/auth/registro`, `/api/auth/login` y `/api/donaciones`.
-   - SonarQube/SonarCloud: se corre sobre todo el repositorio para medir deuda
-     tecnica y code smells (requiere agregar el token/proyecto de Sonar, no
-     incluido aqui).
-3. **Cierre y evaluacion**
-   - Pendiente de redactar una vez ejecutados los pasos 1 y 2 (comparar
-     planificado vs. ejecutado, lecciones aprendidas, plan de mejora continua).
+| Hallazgo (informe, seccion 7.1) | Correccion |
+|---|---|
+| Auto-registro como administrador (alta) | El registro ignora `rol`; el admin inicial se crea con variables de entorno. Hay una prueba que lo verifica. |
+| Sin limite de intentos de login (media) | `express-rate-limit` en `/api/auth/login` y `/api/auth/registro`. |
+| Faltan cabeceras de seguridad (media) | `helmet`: CSP sin estilos ni scripts en linea, HSTS, X-Content-Type-Options, X-Frame-Options. |
+| `JWT_SECRET` con valor por defecto (media) | Sin valor por defecto: el servidor no arranca sin la variable. |
+| `X-Powered-By` expuesto (baja) | Desactivada. |
 
-## Como ejecutar el analisis de SonarQube Cloud
+Ademas: validacion de entradas (correo, contrasena de 8 a 72 caracteres, tipo y cantidad de
+donativo), limite de 10 KB para el cuerpo JSON, verificacion de JWT solo con HS256, respuestas de
+error genericas (sin trazas) y todas las acciones de GitHub fijadas por SHA con permisos minimos.
 
-1. Crea cuenta en https://sonarcloud.io con tu usuario de GitHub e importa el repo.
-2. Copia el `organization` y el `project key` que te muestra y pegalos en `sonar-project.properties`.
-3. En SonarQube Cloud: Administration > Analysis Method > desactiva "Automatic Analysis"
-   (si no, choca con el analisis del pipeline y no importa la cobertura).
-4. Genera un token (My Account > Security) y guardalo en GitHub:
-   Settings > Secrets and variables > Actions > New repository secret, nombre `SONAR_TOKEN`.
-5. Haz push: el job `analisis-sonar` de `.github/workflows/ci.yml` corre las pruebas y sube el analisis.
-   (Sin el secreto `SONAR_TOKEN` el job se omite y no rompe el pipeline.)
+## Analisis de SonarQube Cloud
 
-Alternativa local, sin pipeline:
+1. En https://sonarcloud.io importa el repositorio y copia `organization` y `project key`.
+2. Pegalos en `sonar-project.properties` (`sonar.organization` y `sonar.projectKey`).
+3. Administration > Analysis Method: desactiva "Automatic Analysis".
+4. Crea un token y guardalo en GitHub como secreto `SONAR_TOKEN`
+   (Settings > Secrets and variables > Actions).
+5. Haz push: el job `analisis-sonar` corre las pruebas y sube el analisis con la cobertura.
+
+Alternativa local:
+
 ```bash
 npm install -D @sonar/scan
 npm test
-set SONAR_TOKEN=<tu-token>            # en cmd de Windows
+set SONAR_TOKEN=<tu-token>        # cmd de Windows
 npx sonar-scanner-npm
 ```
 
 ## Nota sobre la base de datos
 
-El avance original especificaba PostgreSQL. Para esta version simplificada se
-usa un archivo JSON (`data/db.json`, generado automaticamente) como capa de
-datos, de modo que el proyecto corra sin depender de un servidor de base de
-datos externo. La logica de cada modulo esta separada de `db.js`, por lo que
-cambiar a PostgreSQL despues implica solo reescribir ese archivo.
+El avance original planeaba PostgreSQL. Esta version usa un archivo JSON (`data/db.json`, se
+genera solo) aislado en `src/db.js`. Migrar a PostgreSQL implica reescribir ese archivo y usar
+consultas parametrizadas.

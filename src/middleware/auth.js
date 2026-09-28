@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('../modules/auth/auth.service');
+const { getJwtSecret } = require('../modules/auth/auth.service');
 
 function requireAuth(req, res, next) {
   const header = req.headers.authorization || '';
@@ -8,7 +8,7 @@ function requireAuth(req, res, next) {
     return res.status(401).json({ error: 'Token no proporcionado' });
   }
   try {
-    req.user = jwt.verify(token, JWT_SECRET);
+    req.user = jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'] });
     return next();
   } catch (err) {
     return res.status(401).json({ error: 'Token invalido o expirado' });
