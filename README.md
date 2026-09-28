@@ -63,20 +63,3 @@ Ademas: validacion de entradas (correo, contrasena de 8 a 72 caracteres, tipo y 
 donativo), limite de 10 KB para el cuerpo JSON, verificacion de JWT solo con HS256, respuestas de
 error genericas (sin trazas) y todas las acciones de GitHub fijadas por SHA con permisos minimos.
 
-## Analisis de SonarQube Cloud
-
-1. En https://sonarcloud.io importa el repositorio y copia `organization` y `project key`.
-2. Pegalos en `sonar-project.properties` (`sonar.organization` y `sonar.projectKey`).
-3. Administration > Analysis Method: desactiva "Automatic Analysis".
-4. Crea un token y guardalo en GitHub como secreto `SONAR_TOKEN`
-   (Settings > Secrets and variables > Actions).
-5. Haz push: el job `analisis-sonar` corre las pruebas y sube el analisis con la cobertura.
-
-Alternativa local:
-
-```bash
-npm install -D @sonar/scan
-npm test
-set SONAR_TOKEN=<tu-token>        # cmd de Windows
-npx sonar-scanner-npm
-```
