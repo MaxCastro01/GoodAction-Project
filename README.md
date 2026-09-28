@@ -2,7 +2,7 @@
 
 Backend en Node.js/Express con autenticacion JWT y roles, registro de donativos con folio
 unico, pruebas unitarias (Jest + Supertest), pipeline CI/CD (GitHub Actions) y analisis de
-seguridad y calidad (OWASP ZAP y SonarQube Cloud). Frontend en HTML/CSS/JS sin frameworks.
+seguridad y calidad (OWASP ZAP y SonarQube Cloud).
 
 ## Estructura
 
@@ -10,7 +10,6 @@ seguridad y calidad (OWASP ZAP y SonarQube Cloud). Frontend en HTML/CSS/JS sin f
 src/
   app.js                  -> Express: helmet, limite de intentos, rutas, manejo de errores
   server.js               -> arranque (carga .env, exige JWT_SECRET, crea el administrador inicial)
-  db.js                   -> almacenamiento en archivo JSON (sustituye a PostgreSQL en esta version)
   middleware/
     auth.js               -> valida JWT y roles (usuario / administrador)
     rateLimit.js          -> limite de peticiones por IP
@@ -81,9 +80,3 @@ npm test
 set SONAR_TOKEN=<tu-token>        # cmd de Windows
 npx sonar-scanner-npm
 ```
-
-## Nota sobre la base de datos
-
-El avance original planeaba PostgreSQL. Esta version usa un archivo JSON (`data/db.json`, se
-genera solo) aislado en `src/db.js`. Migrar a PostgreSQL implica reescribir ese archivo y usar
-consultas parametrizadas.
